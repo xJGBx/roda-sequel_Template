@@ -111,7 +111,26 @@ class Router
             { error: "Invalid or expired reset code." }
           end
         end
+
+
+        def current_user
+          token = request.headers["Authorization"]&.split(" ")&.last
+          user_id = User.decode_jwt(token)
+          user_id ? User[user_id] : nil
+        end
+        
+        def authenticate!
+          response.status = 401 and { error: "Unauthorized" } unless current_user
+        end
+        
+        def authenticated_user
+          user = current_user
+          authenticate! if user.nil?
+          user
+        end
       end
     end
   end
 end
+
+
